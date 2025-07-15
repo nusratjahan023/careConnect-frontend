@@ -7,7 +7,6 @@ import {
   CircularProgress,
   Alert,
   Stack,
-  Divider,
 } from "@mui/material";
 import { useParams } from "react-router-dom";
 import axios from "axios";
@@ -18,7 +17,6 @@ import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import AttachMoneyIcon from "@mui/icons-material/AttachMoney";
 import ChecklistIcon from "@mui/icons-material/Checklist";
 import DescriptionIcon from "@mui/icons-material/Description";
-import PeopleIcon from "@mui/icons-material/People";
 import CaregiverApplications from "./CaregiverApplications";
 
 const JobDetails: React.FC = () => {
@@ -38,34 +36,62 @@ const JobDetails: React.FC = () => {
     }
   };
 
-  useEffect(() => {
-    const fetchJob = async () => {
-      try {
-        const response = await axios.get(`http://localhost:8082/jobs/${id}`);
-        const jobData = response.data;
-        setJob(jobData);
+  const fetchJob = async () => {
+    try {
+      const response = await axios.get(`http://localhost:8082/jobs/${id}`);
+      const jobData = response.data;
+      setJob(jobData);
 
-        // Fetch caregiver info for each application
-        if (jobData.applications?.length > 0) {
-          const caregiverIds = jobData.applications.map(
-            (app: any) => app.caregiverId
-          );
+      if (jobData.applications?.length > 0) {
+        const caregiverIds = jobData.applications.map(
+          (app: any) => app.caregiverId
+        );
 
-          const caregiverPromises = caregiverIds.map((id: number) =>
-            axios.get(`http://localhost:8081/users/${id}`)
-          );
+        const caregiverPromises = caregiverIds.map((id: number) =>
+          axios.get(`http://localhost:8081/users/${id}`)
+        );
 
-          const caregiverResponses = await Promise.all(caregiverPromises);
-          const caregiverData = caregiverResponses.map((res) => res.data);
-          setCaregivers(caregiverData);
-        }
-      } catch (err: any) {
-        setError(err.response?.data?.message || "Failed to load job details.");
-      } finally {
-        setLoading(false);
+        const caregiverResponses = await Promise.all(caregiverPromises);
+        const caregiverData = caregiverResponses.map((res) => res.data);
+        setCaregivers(caregiverData);
       }
-    };
+    } catch (err: any) {
+      setError(err.response?.data?.message || "Failed to load job details.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  const onAccept = async (careGiverId: number) => {
+    try {
+      const payload = {
+        jobId: job.id,
+        careGiverId: careGiverId,
+      };
+
+      const response = await fetch(
+        "http://localhost:8082/jobs/accept-caregiver",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to accept caregiver");
+      }
+
+      console.log("Caregiver accepted successfully:", payload);
+      await fetchJob();
+    } catch (error) {
+      console.error("Error accepting caregiver:", error);
+    }
+  };
+
+  useEffect(() => {
     fetchJob();
   }, [id]);
 
@@ -161,7 +187,7 @@ const JobDetails: React.FC = () => {
         {caregivers.length > 0 && (
           <CaregiverApplications
             caregivers={caregivers}
-            onAccept={(id) => console.log("Accept caregiver with ID:", id)}
+            onAccept={onAccept}
             onViewProfile={(id) => {
               window.location.href = `/profile/${id}`;
             }}

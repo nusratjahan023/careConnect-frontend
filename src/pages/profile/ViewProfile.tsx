@@ -105,7 +105,7 @@ const ViewProfile: React.FC = () => {
         Certifications
       </Typography>
 
-      <CertificationList certifications={userDetails?.certifications} />
+      <CertificationList certifications={userDetails?.certifications} userId={id}/>
 
       <Typography variant="h6" gutterBottom>
         Languages

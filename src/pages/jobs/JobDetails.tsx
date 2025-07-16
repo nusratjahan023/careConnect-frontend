@@ -36,6 +36,16 @@ const JobDetails: React.FC = () => {
     }
   };
 
+  const handleComplete = async (jobId: number, userId: number) => {
+    try {
+      await axios.post(
+        `http://localhost:8082/jobs/complete?jobPostId=${jobId}&caregiverId=${userId}`
+      );
+    } catch (err: any) {
+      setError(err.response?.data?.message || "Failed.");
+    }
+  };
+
   const fetchJob = async () => {
     try {
       const response = await axios.get(`http://localhost:8082/jobs/${id}`);
@@ -116,6 +126,20 @@ const JobDetails: React.FC = () => {
           {job.title}
         </Typography>
 
+        <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
+          Job Status: {job.status}
+        </Typography>
+
+        {job.canViewPaymentStatus &&
+          <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
+          Payment Status: {job.paymentStatus}
+        </Typography>
+        }
+
+        <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
+          Assigned to: {job.assignedUserId}
+        </Typography>
+
         <Stack direction="row" alignItems="center" spacing={1} mb={2}>
           <LocationOnIcon color="action" />
           <Typography variant="subtitle1" color="text.secondary">
@@ -163,7 +187,7 @@ const JobDetails: React.FC = () => {
             size="large"
             fullWidth
             sx={{ mt: 2 }}
-            onClick={() => handleApply(job.id, 1)} // Replace 1 with logged-in user ID
+            onClick={() => handleApply(job.id, 2)} // Replace 1 with logged-in user ID
           >
             Apply Now
           </Button>
@@ -183,8 +207,51 @@ const JobDetails: React.FC = () => {
           </Button>
         )}
 
+        {job.canMakePayment && (
+          <Button
+            variant="outlined"
+            color="secondary"
+            size="large"
+            fullWidth
+            sx={{ mt: 2 }}
+            onClick={() => {
+              window.location.href = `/payment?jobId=${job.id}`;
+            }}
+          >
+            Make Payment
+          </Button>
+        )}
+
+        {job.canAddReview && (
+          <Button
+            variant="outlined"
+            color="secondary"
+            size="large"
+            fullWidth
+            sx={{ mt: 2 }}
+            onClick={() => {
+              window.location.href = `/review?jobId=${job.id}`;
+            }}
+          >
+            Add Review
+          </Button>
+        )}
+
+        {job.canComplete && (
+          <Button
+            variant="outlined"
+            color="secondary"
+            size="large"
+            fullWidth
+            sx={{ mt: 2 }}
+            onClick={() => handleComplete(job.id, 2)}
+          >
+            Mark as Complete
+          </Button>
+        )}
+
         {/* Caregiver List */}
-        {caregivers.length > 0 && (
+        {job.canViewApplicantList && (
           <CaregiverApplications
             caregivers={caregivers}
             onAccept={onAccept}

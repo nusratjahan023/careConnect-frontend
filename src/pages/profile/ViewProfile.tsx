@@ -57,31 +57,35 @@ const ViewProfile: React.FC = () => {
   } = profile;
 
   return (
-    <Box p={3}>
-      <Avatar
-        alt={firstName}
-        src={profile.avatarUrl || "/default-avatar.jpg"}
-        sx={{ width: 100, height: 100, mb: 2 }}
-      />
-      <Typography variant="h5">
-        {firstName} {lastName || ""}
-      </Typography>
-      <Typography variant="subtitle1" color="text.secondary">
-        {role || "Caregiver"} | {address || "St. John's, NL"}
-      </Typography>
-      <Typography variant="body2" color="text.secondary" mt={1}>
-        Email: {email}
-      </Typography>
-      <Typography variant="body2" color="text.secondary">
-        Phone: {phone}
-      </Typography>
-      <Box display="flex" alignItems="center" mt={1}>
-  <Typography variant="body2" color="text.secondary" mr={1}>
-    Rating:
-  </Typography>
-  <Rating value={5} precision={0.5} readOnly />
-</Box>
+    <Box width="60%" margin="auto" alignItems="center" justifyContent="center">
+      <Box display="flex" justifyContent="center" mb={2}>
+        <Avatar
+          alt={firstName}
+          src={profile.avatarUrl || "/default-avatar.jpg"}
+          sx={{ width: 100, height: 100 }}
+        />
+      </Box>
+      <Box display="flex" flexDirection="column" alignItems="center" mb={2}>
+        <Typography variant="h5">
+          {firstName} {lastName || ""}
+        </Typography>
+        <Typography variant="subtitle1" color="text.secondary">
+          {role || "Caregiver"} | {address || "St. John's, NL"}
+        </Typography>
+        <Typography variant="body2" color="text.secondary" mt={1}>
+          Email: {email}
+        </Typography>
+        <Typography variant="body2" color="text.secondary">
+          Phone: {phone}
+        </Typography>
+      </Box>
 
+      <Box display="flex" justifyContent="center" mt={1}>
+        <Typography variant="body2" color="text.secondary" mr={1}>
+          Rating:
+        </Typography>
+        <Rating value={5} precision={0.5} readOnly />
+      </Box>
 
       <Divider sx={{ my: 2 }} />
 
@@ -101,24 +105,16 @@ const ViewProfile: React.FC = () => {
         </>
       )}
 
-      <Typography variant="h6" gutterBottom>
-        Certifications
-      </Typography>
+      <CertificationList
+        certifications={userDetails?.certifications}
+        userId={id}
+      />
 
-      <CertificationList certifications={userDetails?.certifications} userId={id}/>
+      <Languages languages={[]} />
 
-      <Typography variant="h6" gutterBottom>
-        Languages
-      </Typography>
-      <Languages languages={[]}/>
-      <Typography variant="h6" gutterBottom>
-        Education
-      </Typography>
-      <EducationList educationList={[]}/>
-      <Typography variant="h6" gutterBottom>
-        Job Experiences
-      </Typography>
-      <JobExperienceList jobExperiences={[]}/>
+      <EducationList educationList={[]} />
+
+      <JobExperienceList jobExperiences={[]} />
     </Box>
   );
 };

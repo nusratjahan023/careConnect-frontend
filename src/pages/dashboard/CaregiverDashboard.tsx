@@ -1,7 +1,14 @@
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
 import axios from "axios";
-import { Box, Button, Container, Typography, CircularProgress } from "@mui/material";
+import {
+  Box,
+  Button,
+  Container,
+  Typography,
+  CircularProgress,
+  Grid,
+} from "@mui/material";
+import { useNavigate } from "react-router-dom";
 
 interface User {
   firstName: string;
@@ -9,14 +16,14 @@ interface User {
 }
 
 const CaregiverDashboard: React.FC = () => {
-  //onst { userId } = useParams<{ userId: string }>();
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const response = await axios.get(`http://localhost:8081/users/3`);
+        const response = await axios.get("http://localhost:8081/users/3");
         setUser(response.data);
       } catch (error) {
         console.error("Error fetching user data:", error);
@@ -25,15 +32,13 @@ const CaregiverDashboard: React.FC = () => {
       }
     };
 
-    // if (userId) {
-    //   fetchUser();
-    // }
+    fetchUser();
   }, []);
 
   if (loading) {
     return (
       <Container>
-        <Box mt={4} textAlign="center">
+        <Box mt={6} textAlign="center">
           <CircularProgress />
         </Box>
       </Container>
@@ -42,10 +47,11 @@ const CaregiverDashboard: React.FC = () => {
 
   return (
     <Container>
-      <Box mt={4}>
+      <Box mt={6}>
         <Typography variant="h4" gutterBottom>
           Caregiver Dashboard
         </Typography>
+
         {user && (
           <Typography variant="h6" gutterBottom>
             Welcome back, {user.firstName} {user.lastName}!
@@ -53,36 +59,44 @@ const CaregiverDashboard: React.FC = () => {
         )}
 
         <Box mt={4}>
-          <Typography variant="h6" gutterBottom>
-            Navigation
-          </Typography>
-          <Box display="flex" gap={2} flexWrap="wrap">
-            <Button variant="outlined">View Open Jobs</Button>
-            <Button variant="outlined">Your Jobs</Button>
-            <Button variant="outlined">Your Profile</Button>
-            <Button variant="outlined">Messages</Button>
-          </Box>
-        </Box>
-
-        <Box mt={6}>
-          <Typography variant="h6" gutterBottom>
-            Open Job Listings
-          </Typography>
-          {/* TODO: Add Open Job List here */}
-        </Box>
-
-        <Box mt={4}>
-          <Typography variant="h6" gutterBottom>
-            Your Assigned Jobs
-          </Typography>
-          {/* TODO: Add Assigned Jobs List here */}
-        </Box>
-
-        <Box mt={4}>
-          <Typography variant="h6" gutterBottom>
-            Profile Overview
-          </Typography>
-          {/* TODO: Add Profile Summary or link to profile editing */}
+          <Grid container spacing={2}>
+            <Grid item xs={12} sm={6} md={3}>
+              <Button
+                variant="contained"
+                fullWidth
+                onClick={() => navigate("/jobs")}
+              >
+                Browse Jobs
+              </Button>
+            </Grid>
+            <Grid item xs={12} sm={6} md={3}>
+              <Button
+                variant="contained"
+                fullWidth
+                onClick={() => navigate("/applied-jobs")}
+              >
+                My Applied Jobs
+              </Button>
+            </Grid>
+            <Grid item xs={12} sm={6} md={3}>
+              <Button
+                variant="contained"
+                fullWidth
+                onClick={() => navigate("/profile/3")}
+              >
+                Edit Profile
+              </Button>
+            </Grid>
+            <Grid item xs={12} sm={6} md={3}>
+              <Button
+                variant="contained"
+                fullWidth
+                onClick={() => navigate("/messages")}
+              >
+                Messages
+              </Button>
+            </Grid>
+          </Grid>
         </Box>
       </Box>
     </Container>

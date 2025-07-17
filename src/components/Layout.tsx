@@ -7,16 +7,11 @@ const navItems = [
   { label: 'Home', path: '/' },
   { label: 'Login', path: '/login' },
   { label: 'Signup', path: '/signup' },
-  { label: 'Forgot Password', path: '/forgot-password' },
   { label: 'Caregivers', path: '/caregivers' },
   { label: 'Caregiver Dashboard', path: '/caregiver-dashboard' },
   { label: 'Client Dashboard', path: '/client-dashboard' },
   { label: 'Jobs', path: '/jobs' },
   { label: 'Post Job', path: '/post-job' },
-  { label: 'Messages', path: '/messages' },
-  { label: 'Payments', path: '/payments' },
-  { label: 'Profile', path: '/profile' },
-  { label: 'Edit Profile', path: '/edit-profile' },
 ];
 
 const Layout = ({ children }) => {

@@ -15,7 +15,7 @@ const Home: React.FC = () => {
           A trusted platform for caregivers and clients in Newfoundland and Labrador.
         </Typography>
         <Box mt={3}>
-          <Button variant="contained" onClick={() => navigate('/browse-caregivers')} sx={{ mr: 2 }}>
+          <Button variant="contained" onClick={() => navigate('/signup')} sx={{ mr: 2 }}>
             Find Caregivers
           </Button>
           <Button variant="outlined" onClick={() => navigate('/signup')}>

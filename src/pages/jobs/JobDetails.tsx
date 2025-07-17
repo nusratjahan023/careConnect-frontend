@@ -7,6 +7,7 @@ import {
   CircularProgress,
   Alert,
   Stack,
+  Divider,
 } from "@mui/material";
 import { useParams } from "react-router-dom";
 import axios from "axios";
@@ -17,6 +18,9 @@ import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import AttachMoneyIcon from "@mui/icons-material/AttachMoney";
 import ChecklistIcon from "@mui/icons-material/Checklist";
 import DescriptionIcon from "@mui/icons-material/Description";
+import PersonIcon from "@mui/icons-material/Person";
+import AssignmentTurnedInIcon from "@mui/icons-material/AssignmentTurnedIn";
+import PaymentIcon from "@mui/icons-material/Payment";
 import CaregiverApplications from "./CaregiverApplications";
 
 const JobDetails: React.FC = () => {
@@ -28,21 +32,19 @@ const JobDetails: React.FC = () => {
 
   const handleApply = async (jobId: number, userId: number) => {
     try {
-      await axios.post(
-        `http://localhost:8082/jobs/apply?jobPostId=${jobId}&caregiverId=${userId}`
-      );
+      await axios.post(`http://localhost:8082/jobs/apply?jobPostId=${jobId}&caregiverId=${userId}`);
+      await fetchJob();
     } catch (err: any) {
-      setError(err.response?.data?.message || "Failed.");
+      setError(err.response?.data?.message || "Failed to apply.");
     }
   };
 
   const handleComplete = async (jobId: number, userId: number) => {
     try {
-      await axios.post(
-        `http://localhost:8082/jobs/complete?jobPostId=${jobId}&caregiverId=${userId}`
-      );
+      await axios.post(`http://localhost:8082/jobs/complete?jobPostId=${jobId}&caregiverId=${userId}`);
+      await fetchJob();
     } catch (err: any) {
-      setError(err.response?.data?.message || "Failed.");
+      setError(err.response?.data?.message || "Failed to mark as complete.");
     }
   };
 
@@ -53,15 +55,10 @@ const JobDetails: React.FC = () => {
       setJob(jobData);
 
       if (jobData.applications?.length > 0) {
-        const caregiverIds = jobData.applications.map(
-          (app: any) => app.caregiverId
+        const caregiverIds = jobData.applications.map((app: any) => app.caregiverId);
+        const caregiverResponses = await Promise.all(
+          caregiverIds.map((id: number) => axios.get(`http://localhost:8081/users/${id}`))
         );
-
-        const caregiverPromises = caregiverIds.map((id: number) =>
-          axios.get(`http://localhost:8081/users/${id}`)
-        );
-
-        const caregiverResponses = await Promise.all(caregiverPromises);
         const caregiverData = caregiverResponses.map((res) => res.data);
         setCaregivers(caregiverData);
       }
@@ -74,27 +71,13 @@ const JobDetails: React.FC = () => {
 
   const onAccept = async (careGiverId: number) => {
     try {
-      const payload = {
-        jobId: job.id,
-        careGiverId: careGiverId,
-      };
-
-      const response = await fetch(
-        "http://localhost:8082/jobs/accept-caregiver",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(payload),
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error("Failed to accept caregiver");
-      }
-
-      console.log("Caregiver accepted successfully:", payload);
+      const payload = { jobId: job.id, careGiverId };
+      const response = await fetch("http://localhost:8082/jobs/accept-caregiver", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      if (!response.ok) throw new Error("Failed to accept caregiver");
       await fetchJob();
     } catch (error) {
       console.error("Error accepting caregiver:", error);
@@ -122,143 +105,114 @@ const JobDetails: React.FC = () => {
   return (
     <Box p={3} maxWidth={700} mx="auto">
       <Paper elevation={3} sx={{ p: 4, borderRadius: 3 }}>
-        <Typography variant="h4" gutterBottom sx={{ fontWeight: 600 }}>
+        <Typography variant="h4" gutterBottom sx={{ fontWeight: 700 }}>
           {job.title}
         </Typography>
 
-        <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
-          Job Status: {job.status}
-        </Typography>
+        <Divider sx={{ mb: 2 }} />
 
-        {job.canViewPaymentStatus &&
-          <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
-          Payment Status: {job.paymentStatus}
-        </Typography>
-        }
+        <Stack direction="row" spacing={1} alignItems="center" mb={1}>
+          <AssignmentTurnedInIcon color="primary" />
+          <Typography variant="h6">Status: {job.status}</Typography>
+        </Stack>
 
-        <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
-          Assigned to: {job.assignedUserId}
-        </Typography>
+        {job.canViewPaymentStatus && (
+          <Stack direction="row" spacing={1} alignItems="center" mb={1}>
+            <PaymentIcon color="success" />
+            <Typography variant="h6">Payment: {job.paymentStatus}</Typography>
+          </Stack>
+        )}
 
-        <Stack direction="row" alignItems="center" spacing={1} mb={2}>
-          <LocationOnIcon color="action" />
-          <Typography variant="subtitle1" color="text.secondary">
-            {job.location}
+        <Stack direction="row" spacing={1} alignItems="center" mb={2}>
+          <PersonIcon color="secondary" />
+          <Typography variant="body1">
+            <strong>Assigned Caregiver ID:</strong> {job.assignedUserId ?? "Not assigned"}
+          </Typography>
+        </Stack>
+
+        <Stack direction="row" spacing={1} alignItems="center" mb={2}>
+          <LocationOnIcon color="error" />
+          <Typography variant="body1">
+            <strong>Location:</strong> {job.location}
           </Typography>
         </Stack>
 
         <Stack direction="row" spacing={1} alignItems="flex-start" mb={2}>
-          <DescriptionIcon color="action" sx={{ mt: "2px" }} />
+          <DescriptionIcon color="info" />
           <Typography variant="body1">{job.description}</Typography>
         </Stack>
 
         <Stack direction="row" spacing={1} alignItems="center" mb={2}>
-          <ChecklistIcon color="action" />
-          <Typography variant="body2">
+          <ChecklistIcon color="warning" />
+          <Typography variant="body1">
             <strong>Requirements:</strong> {job.requirements}
           </Typography>
         </Stack>
 
         <Stack direction="row" spacing={1} alignItems="center" mb={1}>
-          <AccessTimeIcon color="action" />
-          <Typography variant="body2">
-            <strong>Start:</strong> {new Date(job.startTime).toLocaleString()}
+          <AccessTimeIcon color="info" />
+          <Typography variant="body1">
+            <strong>Start Time:</strong> {new Date(job.startTime).toLocaleString()}
           </Typography>
         </Stack>
 
         <Stack direction="row" spacing={1} alignItems="center" mb={1}>
-          <AccessTimeIcon color="action" />
-          <Typography variant="body2">
-            <strong>End:</strong> {new Date(job.endTime).toLocaleString()}
+          <AccessTimeIcon color="info" />
+          <Typography variant="body1">
+            <strong>End Time:</strong> {new Date(job.endTime).toLocaleString()}
           </Typography>
         </Stack>
 
         <Stack direction="row" spacing={1} alignItems="center" mb={2}>
-          <AttachMoneyIcon color="action" />
-          <Typography variant="body2">
+          <AttachMoneyIcon color="success" />
+          <Typography variant="body1">
             <strong>Hourly Rate:</strong> ${job.hourlyRate}
           </Typography>
         </Stack>
 
+        {/* Action Buttons */}
         {job.canApply && (
-          <Button
-            variant="contained"
-            color="primary"
-            size="large"
-            fullWidth
-            sx={{ mt: 2 }}
-            onClick={() => handleApply(job.id, 2)} // Replace 1 with logged-in user ID
-          >
-            Apply Now
+          <Button variant="contained" color="primary" size="large" fullWidth sx={{ mt: 2 }} onClick={() => handleApply(job.id, 2)}>
+            Apply for this Job
           </Button>
         )}
+
         {job.canEdit && (
-          <Button
-            variant="outlined"
-            color="secondary"
-            size="large"
-            fullWidth
-            sx={{ mt: 2 }}
-            onClick={() => {
-              window.location.href = `/edit-job/${job.id}`;
-            }}
-          >
-            Edit Job
+          <Button variant="outlined" color="secondary" size="large" fullWidth sx={{ mt: 2 }} onClick={() => window.location.href = `/edit-job/${job.id}`}>
+            Edit Job Details
           </Button>
         )}
 
         {job.canMakePayment && (
-          <Button
-            variant="outlined"
-            color="secondary"
-            size="large"
-            fullWidth
-            sx={{ mt: 2 }}
-            onClick={() => {
-              window.location.href = `/payment?jobId=${job.id}`;
-            }}
-          >
-            Make Payment
+          <Button variant="outlined" color="success" size="large" fullWidth sx={{ mt: 2 }} onClick={() => window.location.href = `/payment?jobId=${job.id}`}>
+            Make a Payment
           </Button>
         )}
 
         {job.canAddReview && (
-          <Button
-            variant="outlined"
-            color="secondary"
-            size="large"
-            fullWidth
-            sx={{ mt: 2 }}
-            onClick={() => {
-              window.location.href = `/review?jobId=${job.id}`;
-            }}
-          >
-            Add Review
+          <Button variant="outlined" color="warning" size="large" fullWidth sx={{ mt: 2 }} onClick={() => window.location.href = `/review/${job.id}`}>
+            Add a Review
           </Button>
         )}
 
         {job.canComplete && (
-          <Button
-            variant="outlined"
-            color="secondary"
-            size="large"
-            fullWidth
-            sx={{ mt: 2 }}
-            onClick={() => handleComplete(job.id, 2)}
-          >
+          <Button variant="outlined" color="info" size="large" fullWidth sx={{ mt: 2 }} onClick={() => handleComplete(job.id, 2)}>
             Mark as Complete
           </Button>
         )}
 
-        {/* Caregiver List */}
+        {/* Caregiver Applications */}
         {job.canViewApplicantList && (
-          <CaregiverApplications
-            caregivers={caregivers}
-            onAccept={onAccept}
-            onViewProfile={(id) => {
-              window.location.href = `/profile/${id}`;
-            }}
-          />
+          <Box mt={4}>
+            <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
+              Applicants
+            </Typography>
+            <CaregiverApplications
+              caregivers={caregivers}
+              onAccept={onAccept}
+              onViewProfile={(id) => (window.location.href = `/profile/${id}`)}
+            />
+          </Box>
         )}
       </Paper>
     </Box>

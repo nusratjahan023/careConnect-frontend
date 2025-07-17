@@ -38,12 +38,12 @@ const AppRoutes = () => (
         <Route path="/caregivers/:id" element={<CaregiverDetails />} />
         <Route path="/caregiver-dashboard" element={<CaregiverDashboard />} />
 
-        <Route path="/client-dashboard" element={<ClientDashboard />} />
+        <Route path="/client-dashboard/:id" element={<ClientDashboard />} />
 
         <Route path="/jobs" element={<BrowseJobs />} />
         <Route path="/jobs/:id" element={<JobDetails />} />
         <Route path="/post-job" element={<PostJob />} />
-<Route path="/edit-job/:jobId" element={<PostJob />} />
+        <Route path="/edit-job/:jobId" element={<PostJob />} />
 
         <Route path="/jobs/apply/:id" element={<ApplyJob />} />
 
@@ -51,7 +51,7 @@ const AppRoutes = () => (
         <Route path="/payments" element={<Payments />} />
         <Route path="/edit-profile/:id" element={<EditProfile />} />
         <Route path="/profile/:id" element={<ViewProfile />} />
-        <Route path="/leave-review/:id" element={<LeaveReview />} />
+        <Route path="/review/:jobId" element={<LeaveReview />} />
       </Routes>
     </Layout>
   </Router>

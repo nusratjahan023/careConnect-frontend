@@ -9,11 +9,22 @@ import {
   Paper,
   Grid,
   Alert,
+  InputAdornment,
+  useTheme,
 } from "@mui/material";
+
+import WorkIcon from "@mui/icons-material/Work";
+import LocationOnIcon from "@mui/icons-material/LocationOn";
+import DescriptionIcon from "@mui/icons-material/Description";
+import AssignmentIcon from "@mui/icons-material/Assignment";
+import AccessTimeIcon from "@mui/icons-material/AccessTime";
+import MonetizationOnIcon from "@mui/icons-material/MonetizationOn";
+import SendIcon from "@mui/icons-material/Send";
 
 const PostJob: React.FC = () => {
   const { jobId } = useParams<{ jobId?: string }>();
   const navigate = useNavigate();
+  const theme = useTheme();
 
   const [formData, setFormData] = useState({
     title: "",
@@ -29,7 +40,6 @@ const PostJob: React.FC = () => {
   const [submitted, setSubmitted] = useState(false);
   const [apiError, setApiError] = useState("");
 
-  // 🔄 Load job data in edit mode
   useEffect(() => {
     if (jobId) {
       axios
@@ -83,18 +93,16 @@ const PostJob: React.FC = () => {
 
     try {
       if (jobId) {
-        // ✏️ Update existing job
         const response = await axios.put(`http://localhost:8082/jobs/${jobId}`, formData);
         console.log("Job updated:", response.data);
       } else {
-        // 🆕 Create new job
         const response = await axios.post("http://localhost:8082/jobs", formData);
         console.log("Job posted:", response.data);
       }
 
       setSubmitted(true);
       setApiError("");
-      navigate("/jobs"); // ✅ redirect or refresh list if needed
+      navigate("/jobs");
     } catch (error: any) {
       console.error("Error submitting job:", error);
       setSubmitted(false);
@@ -103,9 +111,9 @@ const PostJob: React.FC = () => {
   };
 
   return (
-    <Box p={3} maxWidth={700} mx="auto">
-      <Paper elevation={3} sx={{ p: 4 }}>
-        <Typography variant="h4" gutterBottom align="center">
+    <Box p={3} maxWidth={800} mx="auto">
+      <Paper elevation={4} sx={{ p: 4, borderRadius: 3 }}>
+        <Typography variant="h4" fontWeight="bold" gutterBottom align="center">
           {jobId ? "Edit Job" : "Post a Job"}
         </Typography>
 
@@ -130,7 +138,15 @@ const PostJob: React.FC = () => {
             error={!!errors.title}
             helperText={errors.title}
             margin="normal"
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <WorkIcon color="primary" />
+                </InputAdornment>
+              ),
+            }}
           />
+
           <TextField
             fullWidth
             label="Location"
@@ -139,7 +155,15 @@ const PostJob: React.FC = () => {
             error={!!errors.location}
             helperText={errors.location}
             margin="normal"
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <LocationOnIcon color="secondary" />
+                </InputAdornment>
+              ),
+            }}
           />
+
           <TextField
             fullWidth
             label="Job Description"
@@ -150,7 +174,15 @@ const PostJob: React.FC = () => {
             error={!!errors.description}
             helperText={errors.description}
             margin="normal"
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <DescriptionIcon sx={{ color: theme.palette.info.main }} />
+                </InputAdornment>
+              ),
+            }}
           />
+
           <TextField
             fullWidth
             label="Requirements"
@@ -161,6 +193,13 @@ const PostJob: React.FC = () => {
             error={!!errors.requirements}
             helperText={errors.requirements}
             margin="normal"
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <AssignmentIcon color="warning" />
+                </InputAdornment>
+              ),
+            }}
           />
 
           <Grid container spacing={2} sx={{ mt: 1 }}>
@@ -175,6 +214,13 @@ const PostJob: React.FC = () => {
                 error={!!errors.startTime}
                 helperText={errors.startTime}
                 margin="normal"
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <AccessTimeIcon sx={{ color: theme.palette.grey[600] }} />
+                    </InputAdornment>
+                  ),
+                }}
               />
             </Grid>
             <Grid item xs={12} sm={6}>
@@ -188,6 +234,13 @@ const PostJob: React.FC = () => {
                 error={!!errors.endTime}
                 helperText={errors.endTime}
                 margin="normal"
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <AccessTimeIcon sx={{ color: theme.palette.grey[600] }} />
+                    </InputAdornment>
+                  ),
+                }}
               />
             </Grid>
           </Grid>
@@ -202,6 +255,13 @@ const PostJob: React.FC = () => {
             helperText={errors.hourlyRate}
             margin="normal"
             inputProps={{ min: 0, step: "0.01" }}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <MonetizationOnIcon color="success" />
+                </InputAdornment>
+              ),
+            }}
           />
 
           <Button
@@ -209,7 +269,8 @@ const PostJob: React.FC = () => {
             color="primary"
             fullWidth
             type="submit"
-            sx={{ mt: 3 }}
+            sx={{ mt: 3, py: 1.5, fontWeight: "bold", fontSize: "1rem" }}
+            endIcon={<SendIcon />}
           >
             {jobId ? "Update Job" : "Post Job"}
           </Button>

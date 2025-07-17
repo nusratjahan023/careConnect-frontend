@@ -68,7 +68,6 @@ const SignupPage: React.FC = () => {
       const userRole = response.data.role;
       const userId = response.data.id
 
-      // Redirect based on role
       if (userRole === "CAREGIVER") {
         navigate(`/caregiver-dashboard?userId=${userId}`);
       } else if (userRole === "CLIENT") {

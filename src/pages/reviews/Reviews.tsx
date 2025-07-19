@@ -55,11 +55,11 @@ const UserReviews = ({userId}) => {
           {reviews.map((review) => (
             <Paper key={review.id} sx={{ p: 2 }}>
               <Typography variant="subtitle1" gutterBottom>
-                Reviewed by: {review.reviewedByName}
+                Reviewed by: {review.reviewedById}
               </Typography>
               <Rating value={review.rating} readOnly />
               <Typography variant="body1" sx={{ mt: 1 }}>
-                {review.comment}
+                {review.description}
               </Typography>
               <Typography variant="caption" color="text.secondary">
                 Submitted on: {new Date(review.submittedOn).toLocaleDateString()}

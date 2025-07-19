@@ -18,21 +18,36 @@ interface User {
 const CaregiverDashboard: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [userId, setUserId] = useState<string | null>(null);
+  const [role, setRole] = useState<string | null>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const response = await axios.get("http://localhost:8081/users/3");
-        setUser(response.data);
-      } catch (error) {
-        console.error("Error fetching user data:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
+    const storedUserId = localStorage.getItem("userId");
+    const storedRole = localStorage.getItem("role");
 
-    fetchUser();
+    if (storedUserId && storedRole) {
+      setUserId(storedUserId);
+      setRole(storedRole);
+
+      const fetchUser = async () => {
+        try {
+          const response = await axios.get(
+            `http://localhost:8081/users/${storedUserId}`
+          );
+          setUser(response.data);
+        } catch (error) {
+          console.error("Error fetching user data:", error);
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      fetchUser();
+    } else {
+      console.warn("User not logged in or missing localStorage data.");
+      setLoading(false);
+    }
   }, []);
 
   if (loading) {
@@ -52,9 +67,13 @@ const CaregiverDashboard: React.FC = () => {
           Caregiver Dashboard
         </Typography>
 
-        {user && (
+        {user ? (
           <Typography variant="h6" gutterBottom>
             Welcome back, {user.firstName} {user.lastName}!
+          </Typography>
+        ) : (
+          <Typography variant="h6" color="error">
+            User data could not be loaded.
           </Typography>
         )}
 
@@ -82,7 +101,7 @@ const CaregiverDashboard: React.FC = () => {
               <Button
                 variant="contained"
                 fullWidth
-                onClick={() => navigate("/profile/3")}
+                onClick={() => navigate(`/profile/${userId}`)}
               >
                 Edit Profile
               </Button>

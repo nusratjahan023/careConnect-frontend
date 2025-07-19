@@ -92,9 +92,16 @@ const ClientDashboard: React.FC = () => {
               <Button
                 variant="contained"
                 fullWidth
-                onClick={() => navigate("/messages")}
+                onClick={() => navigate(`/profile/${id}`)}
               >
-                Messages
+                Edit Profile
+              </Button>
+              <Button
+                variant="contained"
+                fullWidth
+                onClick={() => navigate(`/jobs/user/${id}`)}
+              >
+                My Jobs
               </Button>
             </Grid>
           </Grid>

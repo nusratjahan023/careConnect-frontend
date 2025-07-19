@@ -11,6 +11,7 @@ import {
 } from "@mui/material";
 import { useParams } from "react-router-dom";
 import axios from "axios";
+import { Snackbar } from "@mui/material";
 
 // Icons
 import LocationOnIcon from "@mui/icons-material/LocationOn";
@@ -22,6 +23,9 @@ import PersonIcon from "@mui/icons-material/Person";
 import AssignmentTurnedInIcon from "@mui/icons-material/AssignmentTurnedIn";
 import PaymentIcon from "@mui/icons-material/Payment";
 import CaregiverApplications from "./CaregiverApplications";
+import CaregiverInfo from "./CaregiverInfo";
+import ClientInfo from "./ClientInfo";
+import JobStatus from "./JobStatus";
 
 const JobDetails: React.FC = () => {
   const { id } = useParams();
@@ -29,20 +33,37 @@ const JobDetails: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [caregivers, setCaregivers] = useState<any[]>([]);
+  const role = localStorage.getItem("role");
+  const isClient = role == "CLIENT";
+  const userId = localStorage.getItem("userId");
+  const [successMessage, setSuccessMessage] = useState("");
+const [openSnackbar, setOpenSnackbar] = useState(false);
+const isAuthor = job?.clientId == userId;
+const isAssigned = job?.assignedUserId == userId;
+
 
   const handleApply = async (jobId: number, userId: number) => {
-    try {
-      await axios.post(`http://localhost:8082/jobs/apply?jobPostId=${jobId}&caregiverId=${userId}`);
-      await fetchJob();
-    } catch (err: any) {
-      setError(err.response?.data?.message || "Failed to apply.");
-    }
-  };
+  try {
+    await axios.post(
+      `http://localhost:8082/jobs/apply?jobPostId=${jobId}&caregiverId=${userId}`
+    );
+    await fetchJob();
+    setSuccessMessage("Successfully applied to the job.");
+    setOpenSnackbar(true);
+  } catch (err: any) {
+    setError(err.response?.data?.message || "Failed to apply.");
+  }
+};
+
 
   const handleComplete = async (jobId: number, userId: number) => {
     try {
-      await axios.post(`http://localhost:8082/jobs/complete?jobPostId=${jobId}&caregiverId=${userId}`);
+      await axios.post(
+        `http://localhost:8082/jobs/complete?jobPostId=${jobId}&caregiverId=${userId}`
+      );
       await fetchJob();
+      setSuccessMessage("Successfully completed Job!");
+      setOpenSnackbar(true);
     } catch (err: any) {
       setError(err.response?.data?.message || "Failed to mark as complete.");
     }
@@ -55,9 +76,13 @@ const JobDetails: React.FC = () => {
       setJob(jobData);
 
       if (jobData.applications?.length > 0) {
-        const caregiverIds = jobData.applications.map((app: any) => app.caregiverId);
+        const caregiverIds = jobData.applications.map(
+          (app: any) => app.caregiverId
+        );
         const caregiverResponses = await Promise.all(
-          caregiverIds.map((id: number) => axios.get(`http://localhost:8081/users/22`))
+          caregiverIds.map((id: number) =>
+            axios.get(`http://localhost:8081/users/${id}`)
+          )
         );
         const caregiverData = caregiverResponses.map((res) => res.data);
         setCaregivers(caregiverData);
@@ -72,11 +97,14 @@ const JobDetails: React.FC = () => {
   const onAccept = async (careGiverId: number) => {
     try {
       const payload = { jobId: job.id, careGiverId };
-      const response = await fetch("http://localhost:8082/jobs/accept-caregiver", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
+      const response = await fetch(
+        "http://localhost:8082/jobs/accept-caregiver",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        }
+      );
       if (!response.ok) throw new Error("Failed to accept caregiver");
       await fetchJob();
     } catch (error) {
@@ -104,6 +132,16 @@ const JobDetails: React.FC = () => {
 
   return (
     <Box p={3} maxWidth={700} mx="auto">
+      <Snackbar
+  open={openSnackbar}
+  autoHideDuration={4000}
+  onClose={() => setOpenSnackbar(false)}
+  anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+>
+  <Alert severity="success" onClose={() => setOpenSnackbar(false)} variant="filled">
+    {successMessage}
+  </Alert>
+</Snackbar>
       <Paper elevation={3} sx={{ p: 4, borderRadius: 3 }}>
         <Typography variant="h4" gutterBottom sx={{ fontWeight: 700 }}>
           {job.title}
@@ -113,22 +151,17 @@ const JobDetails: React.FC = () => {
 
         <Stack direction="row" spacing={1} alignItems="center" mb={1}>
           <AssignmentTurnedInIcon color="primary" />
-          <Typography variant="h6">Status: {job.status}</Typography>
+          <Typography variant="h6">Status: <JobStatus jobStatus={job.status}/></Typography>
         </Stack>
 
         {job.canViewPaymentStatus && (
           <Stack direction="row" spacing={1} alignItems="center" mb={1}>
             <PaymentIcon color="success" />
-            <Typography variant="h6">Payment: {job.paymentStatus}</Typography>
+            <Typography variant="h6">Payment: {job.paymentStatus || "Due"}</Typography>
           </Stack>
         )}
-
-        <Stack direction="row" spacing={1} alignItems="center" mb={2}>
-          <PersonIcon color="secondary" />
-          <Typography variant="body1">
-            <strong>Assigned Caregiver ID:</strong> {job.assignedUserId ?? "Not assigned"}
-          </Typography>
-        </Stack>
+        <ClientInfo clientId={job?.clientId}/>
+        <CaregiverInfo caregiverId={job?.assignedUserId}/>
 
         <Stack direction="row" spacing={1} alignItems="center" mb={2}>
           <LocationOnIcon color="error" />
@@ -152,7 +185,8 @@ const JobDetails: React.FC = () => {
         <Stack direction="row" spacing={1} alignItems="center" mb={1}>
           <AccessTimeIcon color="info" />
           <Typography variant="body1">
-            <strong>Start Time:</strong> {new Date(job.startTime).toLocaleString()}
+            <strong>Start Time:</strong>{" "}
+            {new Date(job.startTime).toLocaleString()}
           </Typography>
         </Stack>
 
@@ -170,48 +204,99 @@ const JobDetails: React.FC = () => {
           </Typography>
         </Stack>
 
-        {/* Action Buttons */}
-        {job.canApply && (
-          <Button variant="contained" color="primary" size="large" fullWidth sx={{ mt: 2 }} onClick={() => handleApply(job.id, 2)}>
+        {!isClient && job.canApply && (
+          <Button
+            variant="contained"
+            color="primary"
+            size="large"
+            fullWidth
+            sx={{ mt: 2 }}
+            onClick={() => handleApply(job.id, userId)}
+          >
             Apply for this Job
           </Button>
         )}
 
-        {job.canEdit && (
-          <Button variant="outlined" color="secondary" size="large" fullWidth sx={{ mt: 2 }} onClick={() => window.location.href = `/edit-job/${job.id}`}>
+        {isAuthor && isClient && job.canEdit && (
+          <Button
+            variant="outlined"
+            color="secondary"
+            size="large"
+            fullWidth
+            sx={{ mt: 2 }}
+            onClick={() => (window.location.href = `/edit-job/${job.id}`)}
+          >
             Edit Job Details
           </Button>
         )}
 
-        {job.canMakePayment && (
-          <Button variant="outlined" color="success" size="large" fullWidth sx={{ mt: 2 }} onClick={() => window.location.href = `/payment?jobId=${job.id}`}>
+        {isClient && job.canMakePayment && (
+          <Button
+            variant="outlined"
+            color="success"
+            size="large"
+            fullWidth
+            sx={{ mt: 2 }}
+            onClick={() => (window.location.href = `/payment?jobId=${job.id}`)}
+          >
             Make a Payment
           </Button>
         )}
 
-        {job.canAddReview && (
-          <Button variant="outlined" color="warning" size="large" fullWidth sx={{ mt: 2 }} onClick={() => window.location.href = `/review/${job.id}`}>
+        {isAuthor && job.canAddReview && isClient && (
+          <Button
+            variant="outlined"
+            color="warning"
+            size="large"
+            fullWidth
+            sx={{ mt: 2 }}
+            onClick={() =>
+              (window.location.href = `/review/${job.assignedUserId}`)
+            }
+          >
             Add a Review
           </Button>
         )}
 
-        {job.canComplete && (
-          <Button variant="outlined" color="info" size="large" fullWidth sx={{ mt: 2 }} onClick={() => handleComplete(job.id, 2)}>
+        {isAssigned && job.canAddReview && !isClient && (
+          <Button
+            variant="outlined"
+            color="warning"
+            size="large"
+            fullWidth
+            sx={{ mt: 2 }}
+            onClick={() => (window.location.href = `/review/${job?.clientId}`)}
+          >
+            Add a Review
+          </Button>
+        )}
+
+        {isAssigned && !isClient && job.canComplete && (
+          <Button
+            variant="outlined"
+            color="info"
+            size="large"
+            fullWidth
+            sx={{ mt: 2 }}
+            onClick={() => handleComplete(job.id, userId)}
+          >
             Mark as Complete
           </Button>
         )}
 
-        {/* Caregiver Applications */}
-        {job.canViewApplicantList && (
+        {isAuthor && isClient && job.canViewApplicantList && (
           <Box mt={4}>
             <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
               Applicants
             </Typography>
-            <CaregiverApplications
+            {caregivers.length == 0 && <Typography variant="h6">
+              No caregiver has applied for this job yet.
+              </Typography>}
+            {caregivers.length > 0 && <CaregiverApplications
               caregivers={caregivers}
               onAccept={onAccept}
               onViewProfile={(id) => (window.location.href = `/profile/${id}`)}
-            />
+            />}
           </Box>
         )}
       </Paper>

@@ -23,6 +23,8 @@ import ViewProfile from '../pages/profile/ViewProfile';
 import LeaveReview from '../pages/reviews/LeaveReview';
 
 import HomePage from '../pages/Home';
+import ClientJobs from '../pages/jobs/ClientJobs';
+import AppliedJobs from '../pages/jobs/AppliedJobs';
 
 const AppRoutes = () => (
   <Router>
@@ -37,10 +39,12 @@ const AppRoutes = () => (
         <Route path="/caregivers" element={<BrowseCaregivers />} />
         <Route path="/caregivers/:id" element={<CaregiverDetails />} />
         <Route path="/caregiver-dashboard" element={<CaregiverDashboard />} />
-
+        <Route path="/caregiver-dashboard/:id" element={<CaregiverDashboard />} />
         <Route path="/client-dashboard/:id" element={<ClientDashboard />} />
 
         <Route path="/jobs" element={<BrowseJobs />} />
+        <Route path="/jobs/user/:id" element={<ClientJobs />} />
+        <Route path="/applied-jobs" element={<AppliedJobs />} />
         <Route path="/jobs/:id" element={<JobDetails />} />
         <Route path="/post-job" element={<PostJob />} />
         <Route path="/edit-job/:jobId" element={<PostJob />} />
@@ -51,7 +55,7 @@ const AppRoutes = () => (
         <Route path="/payments" element={<Payments />} />
         <Route path="/edit-profile/:id" element={<EditProfile />} />
         <Route path="/profile/:id" element={<ViewProfile />} />
-        <Route path="/review/:jobId" element={<LeaveReview />} />
+        <Route path="/review/:id" element={<LeaveReview />} />
       </Routes>
     </Layout>
   </Router>

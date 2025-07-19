@@ -1,53 +1,46 @@
-import React, { useEffect, useState } from 'react';
-import { Box, Typography, TextField, Button, Rating } from '@mui/material';
+import React, { useState } from 'react';
+import { Box, Typography, TextField, Button, Rating, Alert } from '@mui/material';
 import { useParams } from 'react-router-dom';
 import axios from 'axios';
 
 const LeaveReview = () => {
-  const { jobId } = useParams<{ jobId: string }>();
+  const { id } = useParams();
   const [rating, setRating] = useState<number | null>(4);
   const [review, setReview] = useState('');
-  const [jobData, setJobData] = useState<any>(null); // holds the fetched job
-
-  // Fetch the job on component mount
-  useEffect(() => {
-    const fetchJob = async () => {
-      if (!jobId) return;
-      try {
-        const response = await axios.get(`http://localhost:8082/jobs/${jobId}`);
-        setJobData(response.data);
-        console.log(response.data);
-      } catch (error) {
-        console.error('Error fetching job data:', error);
-      }
-    };
-    fetchJob();
-  }, [jobId]);
+  const [success, setSuccess] = useState(false);
+  const [error, setError] = useState(false);
+  const userId = localStorage.getItem("userId");
 
   const handleSubmit = async () => {
-    if (!jobId || !jobData) {
-      console.error("Missing job data or job ID");
-      return;
-    }
-
     const payload = {
       rating,
       description: review,
-      reviewForId: jobData.assignedUserId,
-      reviewedById: 3,
+      reviewForId: id,
+      reviewedById: userId,
     };
 
     try {
       const response = await axios.post('http://localhost:8081/users/reviews', payload);
       console.log('Review submitted:', response.data);
-    } catch (error) {
-      console.error('Error submitting review:', error);
+      setSuccess(true);
+      setError(false);
+      setTimeout(() => {
+        window.history.back(); // redirect to previous page
+      }, 1500);
+    } catch (err) {
+      console.error('Error submitting review:', err);
+      setSuccess(false);
+      setError(true);
     }
   };
 
   return (
     <Box p={3}>
       <Typography variant="h5" gutterBottom>Leave a Review</Typography>
+
+      {success && <Alert severity="success" sx={{ mb: 2 }}>Review submitted successfully! Redirecting...</Alert>}
+      {error && <Alert severity="error" sx={{ mb: 2 }}>Something went wrong. Please try again.</Alert>}
+
       <Rating
         name="rating"
         value={rating}
@@ -62,7 +55,7 @@ const LeaveReview = () => {
         value={review}
         onChange={(e) => setReview(e.target.value)}
       />
-      <Button variant="contained" onClick={handleSubmit} disabled={!jobData}>
+      <Button variant="contained" onClick={handleSubmit}>
         Submit
       </Button>
     </Box>

@@ -49,6 +49,8 @@ const ViewProfile: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [tabIndex, setTabIndex] = useState(0);
+  const userRole = localStorage.getItem("role");
+  const isClient = profile?.role === "CLIENT";
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -161,34 +163,43 @@ const ViewProfile: React.FC = () => {
         scrollButtons="auto"
         sx={{ borderBottom: 1, borderColor: "divider", mb: 2 }}
       >
-        <Tab label="Certifications" />
-        <Tab label="Languages" />
-        <Tab label="Education" />
-        <Tab label="Experience" />
+        {!isClient && <Tab label="Certifications" />}
+        {!isClient && <Tab label="Languages" />}
+        {!isClient && <Tab label="Education" />}
+        {!isClient && <Tab label="Experience" />}
         <Tab label="Reviews" />
       </Tabs>
 
-      <TabPanel value={tabIndex} index={0}>
-        <CertificationList
-          certifications={userDetails?.certifications}
-          userId={id}
-        />
-      </TabPanel>
-      <TabPanel value={tabIndex} index={1}>
-        <Languages languages={userDetails?.languages || []} />
-      </TabPanel>
-      <TabPanel value={tabIndex} index={2}>
-        <EducationList
-          educationList={userDetails?.educations}
-          userId={id}
-        />
-      </TabPanel>
-      <TabPanel value={tabIndex} index={3}>
-        <JobExperienceList jobExperiences={userDetails?.jobExperiences || []} />
-      </TabPanel>
-      <TabPanel value={tabIndex} index={4}>
+      {!isClient && (
+        <TabPanel value={tabIndex} index={0}>
+          <CertificationList
+            certifications={userDetails?.certifications}
+            userId={id}
+          />
+        </TabPanel>
+      )}
+      {!isClient && (
+        <TabPanel value={tabIndex} index={1}>
+          <Languages languages={userDetails?.languages || []} />
+        </TabPanel>
+      )}
+      {!isClient && (
+        <TabPanel value={tabIndex} index={2}>
+          <EducationList
+            educationList={userDetails?.educations}
+            userId={id}
+          />
+        </TabPanel>
+      )}
+      {!isClient && (
+        <TabPanel value={tabIndex} index={3}>
+          <JobExperienceList jobExperiences={userDetails?.jobExperiences || []} />
+        </TabPanel>
+      )}
+      <TabPanel value={tabIndex} index={isClient ? 0 : 4}>
         <UserReviews userId={id} />
       </TabPanel>
+
     </Paper>
   );
 };

@@ -25,6 +25,7 @@ const PostJob: React.FC = () => {
   const { jobId } = useParams<{ jobId?: string }>();
   const navigate = useNavigate();
   const theme = useTheme();
+  const userId = localStorage.getItem("userId");
 
   const [formData, setFormData] = useState({
     title: "",
@@ -34,6 +35,7 @@ const PostJob: React.FC = () => {
     startTime: "",
     endTime: "",
     hourlyRate: "",
+    clientId: userId
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -54,6 +56,7 @@ const PostJob: React.FC = () => {
             startTime: job.startTime || "",
             endTime: job.endTime || "",
             hourlyRate: job.hourlyRate?.toString() || "",
+            clientId: userId || ""
           });
         })
         .catch((error) => {

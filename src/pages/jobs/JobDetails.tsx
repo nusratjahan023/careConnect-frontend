@@ -57,7 +57,7 @@ const JobDetails: React.FC = () => {
       if (jobData.applications?.length > 0) {
         const caregiverIds = jobData.applications.map((app: any) => app.caregiverId);
         const caregiverResponses = await Promise.all(
-          caregiverIds.map((id: number) => axios.get(`http://localhost:8081/users/${id}`))
+          caregiverIds.map((id: number) => axios.get(`http://localhost:8081/users/22`))
         );
         const caregiverData = caregiverResponses.map((res) => res.data);
         setCaregivers(caregiverData);

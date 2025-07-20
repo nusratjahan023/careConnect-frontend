@@ -10,8 +10,9 @@ To install dependencies, run:
 
 ```bash
 npm run install
-
+```
 To run the app, run:
 
 ```bash
 npm run dev
+```

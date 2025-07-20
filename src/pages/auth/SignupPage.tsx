@@ -68,15 +68,8 @@ const SignupPage: React.FC = () => {
       const userRole = response.data.role;
       const userId = response.data.id
 
-      if (userRole === "CAREGIVER") {
-        navigate(`/caregiver-dashboard?userId=${userId}`);
-      } else if (userRole === "CLIENT") {
-        navigate(`/client-dashboard/${userId}`);
-      } else if (userRole === "ADMIN") {
-        navigate(`/admin-dashboard/${userId}`);
-      } else {
-        setError("Unknown role received from server");
-      }
+      navigate(`/login`);
+
     } catch (err: any) {
       setError(
         err.response?.data?.message || "Signup failed. Please try again."

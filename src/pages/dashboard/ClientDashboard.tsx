@@ -94,8 +94,10 @@ const ClientDashboard: React.FC = () => {
                 fullWidth
                 onClick={() => navigate(`/profile/${id}`)}
               >
-                Edit Profile
+                View Profile
               </Button>
+            </Grid>
+            <Grid item xs={12} sm={6} md={3}>
               <Button
                 variant="contained"
                 fullWidth
